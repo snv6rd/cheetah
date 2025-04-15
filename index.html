@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TERABLX</title>   
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+  <script src="coins/hyprChrt"></script>            
+  <script src="coins/hyprChrtD"></script>
+  <script src="coins/solaiChrt"></script>           
+  <script src="coins/solaiChrtD"></script>
+  <script src="coins/basaiChrt"></script>           
+  <script src="coins/basaiChrtD"></script>
+  <script src="coins/solmiChrt"></script>           
+  <script src="coins/solmiChrtD"></script>
+  <script src="coins/dxscChrt"></script>
+  <!-- <script src="hyprCoinDat.js"></script> -->             <!-- //HYPR solCoinDat.js -->
+  <script src="pltFn.js"></script> 
+  <script src="emaFn.js"></script> 
+  <script src="qazxs.js"></script> 
+  <script src="butFnx.js"></script> 
+  <script src="shrtlst"></script> 
+  <style>
+    #plots {
+      height: 8000px;   /* 31200 (plt height + mrgn) * #plts=ncoin   mv 2div style */
+      overflow-y: auto; 
+    } 
+    /* .plot {
+      width: 400px; 
+      height: 260px;
+      margin-bottom: 0px;
+    } 
+    .spacer {
+      width: 600px; 
+      height: 400px;
+      margin-bottom: 0px;
+    } */
+  </style> 
+</head>
+<body>
+  <div id="button" style="position: fixed; z-index: 1000; margin-top: 20px;">  
+    <button onclick="resize()" style="margin-left: 40px; width: 45px;">rsiz</button>
+    <select id="reszDir" style="margin-left: -4px; width: 30px">
+      <option value="+">+</option>
+      <option value="-">-</option>
+    </select>
+    <button onclick="shft()" style="margin-left: 10px; width: 45px">shft</button>   
+    <select id="shftDir" style="margin-left: -4px; width: 30px">
+      <option value="L">L</option>
+      <option value="R">R</option>
+    </select>
+    <input type="number" id="stepSize" min="0" value=0 style="margin-left: -4px; width: 40px">
+    <button onclick="expd()" style="margin-left: 10px; width: 45px">expd</button>   
+    <select id="expdDir" style="margin-left: -4px; width: 30px">
+      <option value="+">+</option>
+      <option value="-">-</option>
+    </select>
+    <button onclick="addEma()" style="margin-left: 10px; width: 45px">ema</button>
+    <button onclick="addMhl()" style="margin-left: 10px; width: 45px">mhl</button> 
+    <!-- <p>cant use 40 80 on 1d   add vs btc eth sol</p> -->
+    <select id="mhlLen" style="margin-left: -4px; width: 45px">  // chg len
+      <option value="3">3</option>
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="40">40</option>
+      <option value="80">80</option>
+    </select>
+    <button onclick="addMsr()" style="margin-left: 10px; width: 45px">msr</button> 
+    <select id="msrLen" style="margin-left: -4px; width: 45px">  
+      <option value="3">3</option>
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="40">40</option>
+      <option value="80">80</option>
+    </select>
+    <button onclick="setColor()" style="margin-left: 10px; width: 45px">color</button>
+    <button onclick="srt()" style="margin-left: 10px; width: 45px">srt</button>
+    <select id="srtFtr" style="margin-left: -4px; width: 50px">
+      <option value="ret">ret</option>
+      <option value="slp">slp</option>
+      <option value="scoRet">sRet</option>
+      <option value="scoSlp">sSlp</option>
+      <option value="scoLst">sLst</option>
+    </select>
+    <select id="srtDir" style="margin-left: -4px; width: 30px">
+      <option value="+">+</option>
+      <option value="-">-</option>
+    </select>
+    <input type="number" id="srtPer" min="0" value=0 style="margin-left: 5px; width: 40px">
+    <!-- <button onclick="addTrn()" style="margin-left: 40px; width: 60px">trn</button> -->
+    <!-- <button onclick="pltid()" style="margin-left: 40px; width: 60px">pltid</button> -->
+    <button onclick="setChn()" style="margin-left: 10px; width: 45px">chn</button>
+    <select id="chn" style="margin-left: -4px; width: 55px">
+      <option value="hyp">hyp</option>
+      <option value="solai">solai</option>
+      <option value="basai">basai</option>
+      <option value="solmi">solmi</option>
+      <option value="dxsc">dxsc</option>
+      <option value="gamz">gamz</option>
+      <option value="rwdp">rwdp</option>
+    </select>
+    <!-- <button onclick="setTfrm()" style="margin-left: 15px; width: 45px">tfrm</button> -->
+    <select id="tfrm" style="margin-left: -4px; width: 50px">
+      <option value="1d">1d</option>
+      <option value="4h">4h</option>
+      <option value="1h">1h</option>
+    </select>
+    <button onclick="setCur()" style="margin-left: 10px; width: 45px">cur</button>
+    <select id="cur" style="margin-left: -4px; width: 50px">
+      <option value="usd">usd</option>
+      <option value="btc">btc</option>
+      <option value="eth">eth</option>
+      <option value="sol">sol</option>
+    </select>
+    <button onclick="dup()" style="margin-left: 10px; width: 45px">dup</button>
+  </div>
+
+  <div id="pg" style="position: fixed; z-index: 1000; margin-top: 50px;"> 
+    <button onclick="pg()" style="margin-left: 40px; width: 45px">pg</button>
+    <select id="pgDir" style="margin-left: -4px; width: 30px">
+      <option value="+">+</option>
+      <option value="-">-</option>
+    </select>
+    <input type="number" id="pgJmp" min="0" value=0 style="margin-left: -4px; width: 40px">
+    <button onclick="find()" style="margin-left: 10px; width: 45px">find</button>
+    <input type="text" id="find" value="" style="margin-left: -4px; width: 40px">
+    <span style="margin-left: 10px"> epik drugs, rm lst ts, srt by #pts aft x, rm prints, fix yrng 2use plots, demas, srt incl setcolor </span>
+  </div>
+  
+  <div id="plots" style="display: flex; flex-direction: column; justify-content: center; align-items: center;"></div>
+
+  <script>
+
+    let coinId, shrtId, nCoin;
+    let coinSym, coinSymId;
+    let coinNum;
+    let coinPrc, ema, emax, emin, emid, emaxl, eminl, emaxs, emins; 
+    let hi, lo, emh, eml, anh, anl;
+    let nxtRet, nxtRet1;
+    let res;
+    let dema, dDema;
+    let demax, demin;
+    let coinRet;
+    let coinScor, coinScorRev, coinScorAll, coinScorLst, coinScor0, coinScorAll0;
+    let coinSlp;
+    let pltTrc, pltDat;
+    let coinSpr;
+
+    const emaPer = [3, 5, 10, 20, 40, 80];   // 2.5 10
+    const sclPer = 24; // 36 48
+    let idRef = 'bitcoin';   //'solana' 'bitcoin'   //HYPR
+
+    let i1 = 1000, i2 = 1100;
+    let emaOn = false;
+    let mhlOn = false;
+    let msrOn = false;
+    let trnOn = false;
+    let shftStep = 60;
+    let expdStep = shftStep; ///2;
+    document.getElementById('stepSize').value = shftStep;
+    let iMhl = 0, iMsr = 0;
+    let mhlLen = emaPer[iMhl];
+    let msrLen = emaPer[iMsr];
+    document.getElementById('mhlLen').value = mhlLen;
+    document.getElementById('msrLen').value = msrLen;
+    let srtPer = 12;
+    document.getElementById('srtPer').value = srtPer;
+    let nCoinPg = 6;
+    let iCoin0 = 0;
+    document.getElementById('pgJmp').value = nCoinPg-1;
+    const maxStep = 1000;
+    const minD = 2;
+
+    let iscrl = 0;
+    
+    let width = 400; // 400 600;
+    let height = 260; // 260 400;
+    let size = 's'; // s m
+    let maxWidth, maxHeight;
+
+   
+
+    //document.querySelector('.plot').style.width = `${width}px`;
+    //document.querySelector('.plot').style.height = `${height}px`;
+    
+    //const color = ['green', 'yellow', 'red', 'orange'];
+    const colorp = 'blue';
+    const color0 = ['lightgray', 'lightgray', 'lightgray', 'lightgray', 'lightgray', 'lightgray'];
+    const color1 = ['olive', 'cyan', 'pink', 'orange', 'brown', 'purple'];
+    let color = color1;
+    let iColor = 1;
+
+    let coins, chn, tfrm;
+
+    initVar();
+
+
+    // -----------------
+
+    
+    
+
+    
+    //const i0 = coinPrc.catizen.prc.map(v => v>0).indexOf(true);
+    //console.log('cati prc i0', i0, coinPrc.catizen.prc)
+    //for (let i=0; i<i0; i++) { coinPrc.catizen.prc[i] = 1.5; }
+    
+    //sclAnh(0);
+    /* console.log('btc hi', hi[4][idRef]);
+    console.log('btc emh', emh[4][idRef]);
+    console.log('btc lo', lo[4][idRef]);
+    console.log('btc eml', eml[4][idRef]);
+    console.log('btc anh', anh[2][idRef]);
+    console.log('btc anl', anl[2][idRef]); */
+    //fgh();
+
+    //console.log('emaPer', emaPer);
+    //console.log('prdPer', prdPer);
+
+    
+    // lr frm lsprp_dema   dema ddema -> ret || ema[0,1][i+pre]/ema[0,1][i]
+    // compscor aftr srt
+
+    const maxL = { maxL: -1, maxT: -1, maxId: '', minL: 1e12, minT: -1, minId: '' }, maxT = { maxT: -1, maxId: '', minT: 1e18, minId: '' };
+    for (let id of coinId) {
+      const l = coinPrc[id].prc.length;
+      const t1 = coinPrc[id].dat[l-1];
+      const t0 = coinPrc[id].dat[0];
+      if (l>maxL.maxL) {
+        maxL.maxL = l;
+        maxL.maxT = t1;
+        maxL.maxId = id;
+      } 
+      if (l<maxL.minL) {
+        maxL.minL = l;
+        maxL.minT = t0;
+        maxL.minId = id;
+      }
+      if (t1>maxT.maxT) {
+        maxT.maxT = t1;
+        maxT.maxId = id;
+      } 
+      if (t0<maxT.minT) {
+        maxT.minT = t0;
+        maxT.minId = id;
+      }
+      if (id==idRef) {
+        console.log('btc l', l, 't0', t0, (new Date(t0)).toUTCString(), 't1', t1, (new Date(t1)).toUTCString());
+      }
+    }
+    /* console.log('maxL', maxL, 'maxT', maxT);
+    console.log('maxLdat', (new Date(maxL.maxT)).toUTCString());
+    console.log('minLdat', (new Date(maxL.minT)).toUTCString());
+    console.log('maxTdat', (new Date(maxT.maxT)).toUTCString());
+    console.log('minTdat', (new Date(maxT.minT)).toUTCString()); */
+
+
+    //for (let i=0; i<dDema.length; i++) {
+    /*  let i = 4;
+      for (let id1 of Object.keys(dDema[i])) {
+        dDema[i][id1] = math.multiply(dDema[i][id1], 2);
+      } */
+    //}
+
+    const plotsContainer = document.getElementById('plots');
+    let plots;
+
+    pltFig();
+
+    /* console.log('ppp maxWidth', maxWidth);
+    plotsContainer.style.width = `${maxWidth}px`;
+    plotsContainer.style.height = `${maxHeight+100}px`; */
+
+    //const coinDat = require('./hyprCoinDat');
+    //console.log('coinDat len', coinDat.length, coinDat.slice(0, 5));
+    
+    //for (let i=0; i<coinDat.length; i++) {
+    //  coinSym[coinDat[i].id] = coinDat[i].symbol;
+    //} 
+    //console.log('coinSym', coinSym);
+    //coinDat.forEach(v => coinSym[v.id] = v.symbol);
+
+    
+    const pltid = () => {
+      allplt = document.querySelectorAll('.plot');
+      //console.log('allplt len', allplt.length);
+      //document.querySelectorAll('.plot').forEach(plot => {
+      allplt.forEach(plot => {
+        console.log('plotid', plot.id, 'plotdata', plot.data);
+      });
+    } 
+
+
+    //const mkPltDema = () => {}
+
+    // iCoin 0,1,...   iRow 0,1   iCol 0,1,2
+    
+
+    // i0r0c0 i0r0c1 i0r0c2 i0r1c0 i0r1c1 i0r1c2 i1...   
+    // { i0r0: { d: i0r0, a: [i0r0c0, i0r0c1, i0r0c2] }, i0r1: { d: i0r1, a: [i0r1c0, i0r1c1, i0r1c2] }, 
+    //   i1r0: { d: i1r0, a: [i1r0c0, i1r0c1, i1r0c2] }, i1r1: { d: i1r1, a: [i1r1c0, i1r1c1, i1r1c2] }, ... } 
+
+    /* const spacer = mkPltDiv('0', 'spacer');
+    const textNode = document.createTextNode('text');
+    spacer.appendChild(textNode);
+    //plotsContainer.appendChild(spacer);
+    document.body.appendChild(spacer); */
+
+    
+    //console.log('call pltid 0'); pltid();
+
+    //console.log('qqqqq', i1, i2)
+
+   
+    
+    
+
+
+    // Function to display plots
+    function displayPlots_o() {
+      console.log('displayPlots');
+      let plotData;
+      plotData = plots.find(p => p.id === 'i10r00');
+      console.log('plotData', plotData);
+      let { id, data, layout } = plotData;
+      console.log('id', id);
+      Plotly.newPlot('i1r00', data, layout);
+      plotData = plots.find(p => p.id === 'i10r01');
+      console.log('plotData', plotData);
+      ({ id, data, layout } = plotData);
+      console.log('id', id);
+      Plotly.newPlot('i1r01', data, layout);
+
+      /* document.querySelectorAll('.plot').forEach(plot => {
+        if (plot.id !== '') {
+          const plotData = plots.find(p => p.id === plot.id);
+          // relayout restyle react deleteaddtraces
+          const iPlot = coinNum[plotData.coinId];
+          //if (plotData) {
+          if (plotData && iPlot>=10 && iPlot<20) {
+            const { id, data, layout } = plotData;
+            jj = id.indexOf('r');
+            const id1 = `i${iPlot-10}${id.slice(jj)}`;
+            Plotly.newPlot(id, data, layout);
+            console.log('displayPlots plot.id', plot.id, 'iPlot', iPlot, plotData.coinId, id, id1);
+          }
+        }
+      }); */
+    }
+    // Call the function to display plots
+    //displayPlots();
+
+
+    /* const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const { id, data, layout } = plots.find(plot => plot.id === entry.target.id);
+          Plotly.newPlot(id, data, layout);
+          observer.unobserve(entry.target);
+        }
+      });
+      }, {
+        root: plotsContainer,
+        rootMargin: '0px',
+        threshold: 0.1
+      }
+    );
+
+     document.querySelectorAll('.plot').forEach(plot => {
+      if (plot.id!='') {
+        observer.observe(plot);
+        //const { id, data, layout } = plots.find(plot1 => plot1.id === plot.id);
+        //Plotly.newPlot(id, data, layout);
+      }
+    }); */
+
+    //console.log('call pltid 2'); pltid();
+      
+
+  </script>
+</body>
+</html>
